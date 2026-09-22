@@ -9,6 +9,8 @@
         .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; }
         h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
         .input-group { margin-bottom: 15px; }
+        .row-inputs { display: flex; gap: 15px; }
+        .row-inputs .input-group { flex: 1; }
         label { font-weight: bold; display: block; margin-bottom: 5px; color: #34495e; }
         input[type="text"] { width: 100%; padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
         textarea { width: 100%; height: 120px; padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; resize: vertical; font-size: 15px; box-sizing: border-box; }
@@ -38,20 +40,22 @@
     <h2>📝 Korektor Hasil Ketikan Keliling</h2>
     
     <div class="input-group">
-        <label for="teksInti">1. Teks Inti / Kunci Jawaban (Sudah Terisi Default):</label>
+        <label for="teksInti">1. Teks Inti / Kunci Jawaban:</label>
         <textarea id="teksInti">BAHAYA PENYEBARAN BERITA HOAKS
 Penyebaran berita hoaks di berbagai media sosial saat ini terjadi dengan sangat cepat tanpa adanya filter yang ketat. Dampak yang ditimbulkan dari fenomena ini tidak main-main, mulai dari memicu kecemasan publik, merusak reputasi seseorang, hingga menimbulkan perpecahan yang serius di tengah masyarakat. Hal ini diperparah oleh rendahnya kesadaran untuk menyaring kebenaran informasi sebelum membagikannya ke orang lain. 
 Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna internet dapat memanfaatkan situs resmi cek fakta yang dikelola oleh lembaga independen atau pers digital terpercaya. Melalui pemeriksaan sumber secara teliti dan objektif, ekosistem ruang publik virtual yang sehat, aman, dan bebas dari disinformasi dapat diwujudkan dengan baik. Menjaga rekam jejak digital dengan tidak ikut menyebarkan hoaks adalah tanggung jawab moral setiap netizen. Menurut kajian literatur ilmiah mengenai disinformasi, penguatan kompetensi literasi digital terbukti sangat esensial dalam membekali masyarakat agar mampu menyaring informasi secara kritis dan mandiri di ruang publik virtual.</textarea>
     </div>
     
-    <div class="input-group">
-        <label for="kelas">2. Kelas:</label>
-        <input type="text" id="kelas" placeholder="Contoh: 7A">
-    </div>
-    
-    <div class="input-group">
-        <label for="namaMurid">3. Nama Siswa:</label>
-        <input type="text" id="namaMurid" placeholder="Contoh: Budi">
+    <!-- Kolom input Kelas dan Nama sejajar ke samping agar rapi -->
+    <div class="row-inputs">
+        <div class="input-group">
+            <label for="kelasMurid">2. Kelas:</label>
+            <input type="text" id="kelasMurid" placeholder="Contoh: 10-RPL-1">
+        </div>
+        <div class="input-group">
+            <label for="namaMurid">3. Nama Murid / No. Komputer:</label>
+            <input type="text" id="namaMurid" placeholder="Contoh: Budi (Komputer 05)">
+        </div>
     </div>
     
     <div class="input-group">
@@ -73,10 +77,10 @@ Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna int
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Kelas<th>
+                    <th>Kelas</th>
                     <th>Nama / Identitas</th>
                     <th>Skor Akurasi</th>
-                    <th>Status Kelulusan</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody id="tabelRiwayat">
@@ -89,7 +93,7 @@ Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna int
 // =====================================================================================
 // PENTING: Paste URL Aplikasi Web dari Google Apps Script Anda di dalam tanda kutip berikut!
 // =====================================================================================
-const urlGoogleSheet = "https://script.google.com/macros/s/AKfycbxhrtA10n9hF2wq7xaM_ftAEhCR6-AQKTqa_JAKU4iSUUzgEgagFNMhAq12LiDuxinC/exec";
+const urlGoogleSheet = "PASTE_URL_GOOGLE_APPS_SCRIPT_ANDA_DI_SINI";
 
 let nomorUrut = 1;
 
@@ -110,11 +114,11 @@ function LevenshteinDistance(s1, s2) {
 function prosesKoreksi() {
     let txtInti = document.getElementById("teksInti").value.trim();
     let txtMurid = document.getElementById("teksMurid").value.trim();
-    let kelas = document.getElementById("kelas").value.trim();
     let nama = document.getElementById("namaMurid").value.trim();
+    let kelas = document.getElementById("kelasMurid").value.trim();
     
-    if (txtInti === "" || txtMurid === "" || nama === "") {
-        alert("Mohon isi Nama Murid dan Teks Hasil Ketikan!");
+    if (txtInti === "" || txtMurid === "" || nama === "" || kelas === "") {
+        alert("Mohon isi Kelas, Nama Murid, dan Teks Hasil Ketikan!");
         return;
     }
     
@@ -146,12 +150,13 @@ function prosesKoreksi() {
     // Tampilkan di tabel riwayat browser
     let tabel = document.getElementById("tabelRiwayat");
     let row = tabel.insertRow(0);
-    row.innerHTML = `<td>${nomorUrut++}</td><td>${nama}</td><td><b>${accuracy}%</b></td><td>${statusTeks}</td>`;
+    row.innerHTML = `<td>${nomorUrut++}</td><td>${kelas}</td><td>${nama}</td><td><b>${accuracy}%</b></td><td>${statusTeks}</td>`;
     
     // PROSES KIRIM DATA KE GOOGLE SHEETS
     if (urlGoogleSheet !== "PASTE_URL_GOOGLE_APPS_SCRIPT_ANDA_DI_SINI") {
         let dataKirim = {
             nama: nama,
+            kelas: kelas,
             skor: accuracy,
             status: statusTeks
         };
@@ -163,22 +168,21 @@ function prosesKoreksi() {
         .then(response => response.json())
         .then(data => {
             if(data.result === "success") {
-                alert("✓ Skor " + accuracy + "% milik [" + nama + " / " + kelas + "] BERHASIL dikirim ke Google Sheets Guru!");
-                // Reset form input murid setelah sukses
-                document.getElementById("kelas").value = "";
+                alert("✓ Skor " + accuracy + "% milik [" + nama + "] Kelas [" + kelas + "] BERHASIL disimpan!");
+                // Hanya hapus form nama & ketikan murid, biarkan input kelas tetap terisi untuk mempercepat input murid sekelas berikutnya
                 document.getElementById("namaMurid").value = "";
                 document.getElementById("teksMurid").value = "";
+                document.getElementById("namaMurid").focus();
             } else {
-                alert("❌ Gagal menyimpan ke sistem cloud: " + data.error);
+                alert("❌ Gagal menyimpan ke Google Sheets: " + data.error);
             }
         })
         .catch(error => {
-            alert("❌ Kendala jaringan saat mengirim ke Google Sheets. Cek koneksi internet lab.");
+            alert("❌ Kendala jaringan saat mengirim data. Cek koneksi internet lab.");
             console.error(error);
         });
     } else {
-        alert("⚠️ Nilai terhitung, tapi belum tersimpan ke Cloud karena URL Google Sheets belum dipasang di baris kode nomor 101.");
-        document.getElementById("kelas").value = "";
+        alert("⚠️ Nilai terhitung, tapi belum tersimpan ke Cloud karena URL jembatan Apps Script belum dipasang di baris kode nomor 115.");
         document.getElementById("namaMurid").value = "";
         document.getElementById("teksMurid").value = "";
     }
