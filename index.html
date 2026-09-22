@@ -41,20 +41,17 @@
     
     <div class="input-group">
         <label for="teksInti">1. Teks Inti / Kunci Jawaban:</label>
-        <textarea id="teksInti">BAHAYA PENYEBARAN BERITA HOAKS
-Penyebaran berita hoaks di berbagai media sosial saat ini terjadi dengan sangat cepat tanpa adanya filter yang ketat. Dampak yang ditimbulkan dari fenomena ini tidak main-main, mulai dari memicu kecemasan publik, merusak reputasi seseorang, hingga menimbulkan perpecahan yang serius di tengah masyarakat. Hal ini diperparah oleh rendahnya kesadaran untuk menyaring kebenaran informasi sebelum membagikannya ke orang lain. 
-Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna internet dapat memanfaatkan situs resmi cek fakta yang dikelola oleh lembaga independen atau pers digital terpercaya. Melalui pemeriksaan sumber secara teliti dan objektif, ekosistem ruang publik virtual yang sehat, aman, dan bebas dari disinformasi dapat diwujudkan dengan baik. Menjaga rekam jejak digital dengan tidak ikut menyebarkan hoaks adalah tanggung jawab moral setiap netizen. Menurut kajian literatur ilmiah mengenai disinformasi, penguatan kompetensi literasi digital terbukti sangat esensial dalam membekali masyarakat agar mampu menyaring informasi secara kritis dan mandiri di ruang publik virtual.</textarea>
+        <textarea id="teksInti" readonly style="background-color: #e9ecef; color: #495057; font-weight: 500; cursor: not-allowed;"></textarea>
     </div>
     
-    <!-- Kolom input Kelas dan Nama sejajar ke samping agar rapi -->
     <div class="row-inputs">
         <div class="input-group">
             <label for="kelasMurid">2. Kelas:</label>
-            <input type="text" id="kelasMurid" placeholder="Contoh: 7A">
+            <input type="text" id="kelasMurid" placeholder="Contoh: 10-RPL-1">
         </div>
         <div class="input-group">
-            <label for="namaMurid">3. Nama Murid</label>
-            <input type="text" id="namaMurid" placeholder="Contoh: Budi">
+            <label for="namaMurid">3. Nama Murid / No. Komputer:</label>
+            <input type="text" id="namaMurid" placeholder="Contoh: Budi (Komputer 05)">
         </div>
     </div>
     
@@ -91,9 +88,19 @@ Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna int
 
 <script>
 // =====================================================================================
-// PENTING: Paste URL Aplikasi Web dari Google Apps Script Anda di dalam tanda kutip berikut!
+// PENTING: Gantilah URL di bawah ini dengan URL Aplikasi Web dari Google Apps Script Anda!
 // =====================================================================================
-const urlGoogleSheet = "PASTE_URL_GOOGLE_APPS_SCRIPT_ANDA_DI_SINI";
+const urlGoogleSheet = "https://script.google.com/macros/s/AKfycbxhrtA10n9hF2wq7xaM_ftAEhCR6-AQKTqa_JAKU4iSUUzgEgagFNMhAq12LiDuxinC/exec";
+
+// Memasukkan teks master hoaks secara aman melalui JavaScript
+const teksMasterHoaks = `BAHAYA PENYEBARAN BERITA HOAKS
+Penyebaran berita hoaks di berbagai media sosial saat ini terjadi dengan sangat cepat tanpa adanya filter yang ketat. Dampak yang ditimbulkan dari fenomena ini tidak main-main, mulai dari memicu kecemasan publik, merusak reputasi seseorang, hingga menimbulkan perpecahan yang serius di tengah masyarakat. Hal ini diperparah oleh rendahnya kesadaran untuk menyaring kebenaran informasi sebelum membagikannya ke orang lain. 
+Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna internet dapat memanfaatkan situs resmi cek fakta yang dikelola oleh lembaga independen atau pers digital terpercaya. Melalui pemeriksaan sumber secara teliti dan objektif, ekosistem ruang publik virtual yang sehat, aman, dan bebas dari disinformasi dapat diwujudkan dengan baik. Menjaga rekam jejak digital dengan tidak ikut menyebarkan hoaks adalah tanggung jawab moral setiap netizen. Menurut kajian literatur ilmiah mengenai disinformasi, penguatan kompetensi literasi digital terbukti sangat esensial dalam membekali masyarakat agar mampu menyaring informasi secara kritis dan mandiri di ruang publik virtual.`;
+
+// Jalankan saat halaman web pertama kali dimuat di browser
+window.onload = function() {
+    document.getElementById("teksInti").value = teksMasterHoaks;
+};
 
 let nomorUrut = 1;
 
@@ -117,13 +124,20 @@ function prosesKoreksi() {
     let nama = document.getElementById("namaMurid").value.trim();
     let kelas = document.getElementById("kelasMurid").value.trim();
     
-    if (txtInti === "" || txtMurid === "" || nama === "" || kelas === "") {
-        alert("Mohon isi Kelas, Nama Murid, dan Teks Hasil Ketikan!");
+    // Proteksi validasi agar terhindar dari eror NaN%
+    if (txtInti === "") {
+        alert("Eror: Teks Inti kosong atau tidak terbaca!");
+        return;
+    }
+    if (kelas === "" || nama === "" || txtMurid === "") {
+        alert("Mohon isi Kelas, Nama Murid, dan Paste Hasil Ketikan Terlebih Dahulu!");
         return;
     }
     
     let distance = LevenshteinDistance(txtInti, txtMurid);
     let maxLength = Math.max(txtInti.length, txtMurid.length);
+    
+    // Perhitungan matematika yang aman dari pembangkangan angka nol
     let accuracy = maxLength === 0 ? 100 : ((maxLength - distance) / maxLength) * 100;
     accuracy = Math.max(0, accuracy).toFixed(2);
     
@@ -147,12 +161,10 @@ function prosesKoreksi() {
     }
     resStatus.innerText = statusTeks;
 
-    // Tampilkan di tabel riwayat browser
     let tabel = document.getElementById("tabelRiwayat");
     let row = tabel.insertRow(0);
     row.innerHTML = `<td>${nomorUrut++}</td><td>${kelas}</td><td>${nama}</td><td><b>${accuracy}%</b></td><td>${statusTeks}</td>`;
     
-    // PROSES KIRIM DATA KE GOOGLE SHEETS
     if (urlGoogleSheet !== "PASTE_URL_GOOGLE_APPS_SCRIPT_ANDA_DI_SINI") {
         let dataKirim = {
             nama: nama,
@@ -168,8 +180,7 @@ function prosesKoreksi() {
         .then(response => response.json())
         .then(data => {
             if(data.result === "success") {
-                alert("✓ Skor " + accuracy + "% milik [" + nama + "] Kelas [" + kelas + "] BERHASIL disimpan!");
-                // Hanya hapus form nama & ketikan murid, biarkan input kelas tetap terisi untuk mempercepat input murid sekelas berikutnya
+                alert("✓ Skor " + accuracy + "% milik [" + nama + "] BERHASIL disimpan!");
                 document.getElementById("namaMurid").value = "";
                 document.getElementById("teksMurid").value = "";
                 document.getElementById("namaMurid").focus();
@@ -182,7 +193,7 @@ function prosesKoreksi() {
             console.error(error);
         });
     } else {
-        alert("⚠️ Nilai terhitung, tapi belum tersimpan ke Cloud karena URL jembatan Apps Script belum dipasang di baris kode nomor 115.");
+        alert("⚠️ Nilai terhitung, tapi belum tersimpan ke Cloud karena URL jembatan Apps Script belum dipasang di baris kode nomor 80.");
         document.getElementById("namaMurid").value = "";
         document.getElementById("teksMurid").value = "";
     }
