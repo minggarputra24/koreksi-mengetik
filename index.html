@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Koreksi Praktikum Mengetik Keliling</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background-color: #f4f6f9; color: #333; }
+        .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+        .input-group { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #34495e; }
+        input[type="text"] { width: 100%; padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
+        textarea { width: 100%; height: 120px; padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; resize: vertical; font-size: 15px; box-sizing: border-box; }
+        textarea:focus, input[type="text"]:focus { border-color: #3498db; outline: none; }
+        button { display: block; width: 100%; padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
+        button:hover { background-color: #27ae60; }
+        
+        .result-box { margin-top: 20px; padding: 15px; border-radius: 6px; text-align: center; display: none; }
+        .score { font-size: 36px; font-weight: bold; margin: 5px 0; }
+        .status { font-size: 16px; font-weight: bold; }
+        
+        .sempurna { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .bagus { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .cukup { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .kurang { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .history-section { margin-top: 35px; border-top: 2px dashed #ccc; padding-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #34495e; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📝 Korektor Hasil Ketikan Keliling</h2>
+    
+    <div class="input-group">
+        <label for="teksInti">1. Teks Inti / Kunci Jawaban (Sudah Terisi Default):</label>
+        <textarea id="teksInti">BAHAYA PENYEBARAN BERITA HOAKS
+Penyebaran berita hoaks di berbagai media sosial saat ini terjadi dengan sangat cepat tanpa adanya filter yang ketat. Dampak yang ditimbulkan dari fenomena ini tidak main-main, mulai dari memicu kecemasan publik, merusak reputasi seseorang, hingga menimbulkan perpecahan yang serius di tengah masyarakat. Hal ini diperparah oleh rendahnya kesadaran untuk menyaring kebenaran informasi sebelum membagikannya ke orang lain. 
+Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna internet dapat memanfaatkan situs resmi cek fakta yang dikelola oleh lembaga independen atau pers digital terpercaya. Melalui pemeriksaan sumber secara teliti dan objektif, ekosistem ruang publik virtual yang sehat, aman, dan bebas dari disinformasi dapat diwujudkan dengan baik. Menjaga rekam jejak digital dengan tidak ikut menyebarkan hoaks adalah tanggung jawab moral setiap netizen. Menurut kajian literatur ilmiah mengenai disinformasi, penguatan kompetensi literasi digital terbukti sangat esensial dalam membekali masyarakat agar mampu menyaring informasi secara kritis dan mandiri di ruang publik virtual.</textarea>
+    </div>
+    
+    <div class="input-group">
+        <label for="namaMurid">2. Nama / Nomor Komputer Murid:</label>
+        <input type="text" id="namaMurid" placeholder="Contoh: Budi - Komputer 05">
+    </div>
+    
+    <div class="input-group">
+        <label for="teksMurid">3. Paste Hasil Ketikan Murid (dari Ms. Word):</label>
+        <textarea id="teksMurid" placeholder="Tekan Ctrl+A lalu Ctrl+C di Word murid, kemudian tempel di sini..."></textarea>
+    </div>
+    
+    <button onclick="prosesKoreksi()">Cek & Kirim Nilai</button>
+    
+    <div id="resultBox" class="result-box">
+        <div id="resultText">Skor Akurasi Ketikan:</div>
+        <div id="resultScore" class="score">0%</div>
+        <div id="resultStatus" class="status">Status</div>
+    </div>
+
+    <div class="history-section">
+        <h3>📋 Rekap Nilai Sementara (Komputer Ini)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama / Identitas</th>
+                    <th>Skor Akurasi</th>
+                    <th>Status Kelulusan</th>
+                </tr>
+            </thead>
+            <tbody id="tabelRiwayat">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// =====================================================================================
+// PENTING: Paste URL Aplikasi Web dari Google Apps Script Anda di dalam tanda kutip berikut!
+// =====================================================================================
+const urlGoogleSheet = "https://script.google.com/macros/s/AKfycbxhrtA10n9hF2wq7xaM_ftAEhCR6-AQKTqa_JAKU4iSUUzgEgagFNMhAq12LiDuxinC/exec";
+
+let nomorUrut = 1;
+
+function LevenshteinDistance(s1, s2) {
+    let m = s1.length; let n = s2.length;
+    let dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i] = i;
+    for (let j = 0; j <= n; j++) dp[j] = j;
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (s1[i - 1] === s2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1;
+        }
+    }
+    return dp[m][n];
+}
+
+function prosesKoreksi() {
+    let txtInti = document.getElementById("teksInti").value.trim();
+    let txtMurid = document.getElementById("teksMurid").value.trim();
+    let nama = document.getElementById("namaMurid").value.trim();
+    
+    if (txtInti === "" || txtMurid === "" || nama === "") {
+        alert("Mohon isi Nama Murid dan Teks Hasil Ketikan!");
+        return;
+    }
+    
+    let distance = LevenshteinDistance(txtInti, txtMurid);
+    let maxLength = Math.max(txtInti.length, txtMurid.length);
+    let accuracy = maxLength === 0 ? 100 : ((maxLength - distance) / maxLength) * 100;
+    accuracy = Math.max(0, accuracy).toFixed(2);
+    
+    let resBox = document.getElementById("resultBox");
+    let resScore = document.getElementById("resultScore");
+    let resStatus = document.getElementById("resultStatus");
+    
+    resScore.innerText = accuracy + "%";
+    resBox.style.display = "block";
+    resBox.className = "result-box"; 
+    
+    let statusTeks = "";
+    if (accuracy == 100) {
+        resBox.classList.add("sempurna"); statusTeks = "Sempurna";
+    } else if (accuracy >= 90) {
+        resBox.classList.add("bagus"); statusTeks = "Sangat Bagus";
+    } else if (accuracy >= 75) {
+        resBox.classList.add("cukup"); statusTeks = "Cukup (Lulus)";
+    } else {
+        resBox.classList.add("kurang"); statusTeks = "Perlu Remedial";
+    }
+    resStatus.innerText = statusTeks;
+
+    // Tampilkan di tabel riwayat browser
+    let tabel = document.getElementById("tabelRiwayat");
+    let row = tabel.insertRow(0);
+    row.innerHTML = `<td>${nomorUrut++}</td><td>${nama}</td><td><b>${accuracy}%</b></td><td>${statusTeks}</td>`;
+    
+    // PROSES KIRIM DATA KE GOOGLE SHEETS
+    if (urlGoogleSheet !== "PASTE_URL_GOOGLE_APPS_SCRIPT_ANDA_DI_SINI") {
+        let dataKirim = {
+            nama: nama,
+            skor: accuracy,
+            status: statusTeks
+        };
+
+        fetch(urlGoogleSheet, {
+            method: "POST",
+            body: JSON.stringify(dataKirim)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.result === "success") {
+                alert("✓ Skor " + accuracy + "% milik [" + nama + "] BERHASIL dikirim ke Google Sheets Guru!");
+                // Reset form input murid setelah sukses
+                document.getElementById("namaMurid").value = "";
+                document.getElementById("teksMurid").value = "";
+            } else {
+                alert("❌ Gagal menyimpan ke sistem cloud: " + data.error);
+            }
+        })
+        .catch(error => {
+            alert("❌ Kendala jaringan saat mengirim ke Google Sheets. Cek koneksi internet lab.");
+            console.error(error);
+        });
+    } else {
+        alert("⚠️ Nilai terhitung, tapi belum tersimpan ke Cloud karena URL Google Sheets belum dipasang di baris kode nomor 101.");
+        document.getElementById("namaMurid").value = "";
+        document.getElementById("teksMurid").value = "";
+    }
+}
+</script>
+
+</body>
+</html>
