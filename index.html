@@ -45,12 +45,17 @@ Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna int
     </div>
     
     <div class="input-group">
-        <label for="namaMurid">2. Nama / Nomor Komputer Murid:</label>
-        <input type="text" id="namaMurid" placeholder="Contoh: Budi - Komputer 05">
+        <label for="kelas">2. Kelas:</label>
+        <input type="text" id="kelas" placeholder="Contoh: 7A">
     </div>
     
     <div class="input-group">
-        <label for="teksMurid">3. Paste Hasil Ketikan Murid (dari Ms. Word):</label>
+        <label for="namaMurid">3. Nama Siswa:</label>
+        <input type="text" id="namaMurid" placeholder="Contoh: Budi">
+    </div>
+    
+    <div class="input-group">
+        <label for="teksMurid">4. Paste Hasil Ketikan Murid (dari Ms. Word):</label>
         <textarea id="teksMurid" placeholder="Tekan Ctrl+A lalu Ctrl+C di Word murid, kemudian tempel di sini..."></textarea>
     </div>
     
@@ -68,6 +73,7 @@ Untuk memverifikasi kebenaran suatu berita yang meragukan tersebut, pengguna int
             <thead>
                 <tr>
                     <th>No</th>
+                    <th>Kelas<th>
                     <th>Nama / Identitas</th>
                     <th>Skor Akurasi</th>
                     <th>Status Kelulusan</th>
@@ -104,6 +110,7 @@ function LevenshteinDistance(s1, s2) {
 function prosesKoreksi() {
     let txtInti = document.getElementById("teksInti").value.trim();
     let txtMurid = document.getElementById("teksMurid").value.trim();
+    let kelas = document.getElementById("kelas").value.trim();
     let nama = document.getElementById("namaMurid").value.trim();
     
     if (txtInti === "" || txtMurid === "" || nama === "") {
@@ -156,8 +163,9 @@ function prosesKoreksi() {
         .then(response => response.json())
         .then(data => {
             if(data.result === "success") {
-                alert("✓ Skor " + accuracy + "% milik [" + nama + "] BERHASIL dikirim ke Google Sheets Guru!");
+                alert("✓ Skor " + accuracy + "% milik [" + nama + " / " + kelas + "] BERHASIL dikirim ke Google Sheets Guru!");
                 // Reset form input murid setelah sukses
+                document.getElementById("kelas").value = "";
                 document.getElementById("namaMurid").value = "";
                 document.getElementById("teksMurid").value = "";
             } else {
@@ -170,6 +178,7 @@ function prosesKoreksi() {
         });
     } else {
         alert("⚠️ Nilai terhitung, tapi belum tersimpan ke Cloud karena URL Google Sheets belum dipasang di baris kode nomor 101.");
+        document.getElementById("kelas").value = "";
         document.getElementById("namaMurid").value = "";
         document.getElementById("teksMurid").value = "";
     }
